@@ -2,49 +2,58 @@ package song.ipi;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Vector;
+//import java.util.Vector;
 
 import org.jblas.DoubleMatrix;
+import org.jblas.MatrixFunctions;
+
+import com.google.common.collect.BiMap;
 
 import song.database.DatabaseQuery;
 import song.matrix.Graph;
+
+//import com.google.guava:
 /**
  * This class uses a difficulty ordering graph to compute 
  * recommendation probabilities.
  * @author lijiax
- * @version 1.0
+ * @version 2.0
  */
 public class Inference {
-	private HashMap<Integer, Integer> map;
+	//private HashMap<Integer, Integer> map;
 	/**
 	 * constructor function
 	 * @param hash
 	 */
-	public Inference(HashMap<Integer, Integer> hash){
-		map = hash;
+	public Inference(){
+
 	}
 	/**
 	 * get bonus vector for specific user
+	 * @param map the song-index HashMap
 	 * @param userID user ID
 	 * @param size the size of bonus vector
 	 * @return a bonus vector
 	 */
-	private DoubleMatrix getBonusVector(int userID, int size){
+	private DoubleMatrix getBonusVector(BiMap<Integer, Integer> map, int inputUserID, int size){
 		if(DatabaseQuery.connection == null)
 			DatabaseQuery.connect();
 		DoubleMatrix bonus = DoubleMatrix.zeros(size);
-		String sql = "select * from SongRecommendation_0rz9.UserSongTrainData where userID = userID";
+		String sql = "select * from SongRecommendation_0rz9.UserSongTrainData where userID = "+inputUserID;
 		ResultSet result = DatabaseQuery.query(sql);
 		try {
-			while(result.next()){
-				int songID = result.getInt(1);
-				int index  =  map.get(songID);
-				bonus.put(index, 1);
+			if(!result.next())
+				System.out.println("Nonexistent UserID!");
+			else{
+				while(result.next()){
+					int songID = result.getInt(1);
+					int index  =  map.get(songID);
+					bonus.put(index, 1);
+				}
 			}
-		} catch (SQLException e) {
+		} catch (SQLException e1) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e1.printStackTrace();
 		}
 		return bonus;
 	}
@@ -55,56 +64,67 @@ public class Inference {
 	 * @return the squared difference
 	 */
 	private double getDifference(DoubleMatrix m1, DoubleMatrix m2){
-		DoubleMatrix diff = m1.sub(m2);
-		double sum = 0.0;
-		for(int i=0; i < diff.length; i++)
-			sum += Math.pow(diff.get(i), 2);
-		return Math.sqrt(sum);
+		DoubleMatrix diff = m1.subColumnVector(m2);
+		MatrixFunctions.powi(diff,2);
+		return Math.sqrt(diff.sum());
 	}
 	/**
-	 * create performance degree vector for specific user
+	 * use IPI to recommend songs for specific user
 	 * using IPI algorithm
 	 * @param userID user ID
-	 * @return a performance degree vector
+	 * @param k the number of songs to be recommended
+	 * @return an array of recommended song IDs
 	 */
-	public DoubleMatrix IPI(int userID){
+	public int[] IPI(int userID, int k){
 		if(DatabaseQuery.connection == null)
 			DatabaseQuery.connect();
-		Graph m = new Graph();
-		HashMap<Integer, Integer> map = m.buildSongHashMap();
-		int size = m.getSize();
+		Graph tool = new Graph();
+		BiMap<Integer, Integer> map = tool.buildSongHashMap();
+		int size = tool.getSize();
 		System.out.println("matrix size is " + size);
 		double [] array = new double[size];
 		double initialV = 1.0/size;
+		//System.out.println(initialV);
 		for(int i = 0; i < size; i++)
 			array[i] = initialV;
-		double error = 1000, threshold = 0.0001, alpha = 0.3;
-		DoubleMatrix graph= m.buildGraph(map, size);
+		double error = 1000, threshold = 0.0001, alpha = 0.2;
+		DoubleMatrix graph= tool.buildGraph(map, size);
 		DoubleMatrix degree = new DoubleMatrix(array),
-				     bonus  = getBonusVector(userID, size).muli(1-alpha),
-				     next;
+				     bonus  = getBonusVector(map, userID, size).muli(1-alpha),
+				     next ;
 		
 		DoubleMatrix transposedGraph = graph.transpose().muli(alpha);
+		
 		while(error > threshold){
-			next = transposedGraph.mul(degree).add(bonus);
-			error = getDifference(next, graph);
+			next = transposedGraph.mmul(degree);
+			
+			next.addiColumnVector(bonus);
+			error = getDifference(next, degree);
 			degree = next;
 		}
-		return degree;
-	}
-	/**
-	 * rank performance degree vector and select top k elements from it
-	 * @param set performance degree vector
-	 * @param k the number of elements to be recommended
-	 * @return a group of song IDs
-	 */
-	public Vector<Integer> rankSongs(DoubleMatrix set, int k){
-		Vector<Integer> songs = new Vector<Integer>(k);
-		set.sortColumnsi();
-		//select part songs from set and put them into vector
-		for(int i = 0; i < k; i++){
-			//value to key
+		//filter songs sung before in performance degree
+		for(int i = 0; i < size; i++){
+			if(bonus.get(i) == (1-alpha))
+				degree.put(i, 0.0);
 		}
-		return songs;
+		
+		int recommendedSongIDs[] = new int[k];
+		//select part songs from set and put them into array
+		int i = 0;
+		double max = 0.0;
+		BiMap<Integer, Integer> reverseMap = map.inverse();
+		while(i < k){
+			max = degree.max();
+			int j = 0;
+			while(j < size){
+				if(i < k && max == degree.get(j)){
+					recommendedSongIDs[i++] = reverseMap.get(j);
+					degree.put(j, 0.0);
+				}
+				j++;
+			}
+		}
+		return recommendedSongIDs;
 	}
+	
 }

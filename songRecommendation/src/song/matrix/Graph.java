@@ -2,21 +2,24 @@ package song.matrix;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 
 import org.jblas.DoubleMatrix;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+
 import song.database.DatabaseQuery;
 /**
  * This class is to build a directed, weighted graph. Matrix is
  * a good way to implement it. Fill elements based on difficulty
  * orderings.
  * @author lijiax
- * @version 1.0
+ * @version 2.0
  */
 public class Graph {
     private int size;
     /**
-     * constructor function
+     * constructor function7
      */
 	public Graph(){
 		size = 0;
@@ -29,12 +32,12 @@ public class Graph {
 		return size;
 	}
 	/**
-	 * build a hashmap whose key is song ID and value is index in matrix
+	 * build a bidirectional HashMap whose key is song ID and value is index in matrix
 	 * for songs in database
-	 * @return a hashmap
+	 * @return a bidirectional HashBiMap
 	 */
-	public HashMap<Integer, Integer> buildSongHashMap(){
-		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>(); 
+	public BiMap<Integer, Integer> buildSongHashMap(){
+		BiMap<Integer, Integer> map = HashBiMap.create(); 
 		if(DatabaseQuery.connection == null)
 			DatabaseQuery.connect();
 		String sql = "select * from SongRecommendation_0rz9.Songs";
@@ -59,7 +62,7 @@ public class Graph {
 	 * @param size matrix dimension
 	 * @return
 	 */
-	public DoubleMatrix buildGraph(HashMap<Integer, Integer> map, int size){
+	public DoubleMatrix buildGraph(BiMap<Integer, Integer> map, int size){
 		DoubleMatrix graph = DoubleMatrix.zeros(size, size);
 		if(DatabaseQuery.connection == null)
 			DatabaseQuery.connect();

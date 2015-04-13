@@ -51,7 +51,7 @@ public class DatabaseQuery {
 		    resultSet = statement.executeQuery(sql);		    
 		}
 		catch(SQLException e){
-			System.out.println("query error");
+			System.out.println(sql+"  query error");
 		}		
 		return resultSet;
 	}
