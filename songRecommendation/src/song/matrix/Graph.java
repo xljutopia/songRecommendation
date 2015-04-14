@@ -19,7 +19,7 @@ import song.database.DatabaseQuery;
 public class Graph {
     private int size;
     /**
-     * constructor function7
+     * constructor function
      */
 	public Graph(){
 		size = 0;
@@ -46,7 +46,7 @@ public class Graph {
 			int i = 0;
 			while(result.next()){
 				//add some filter methods here
-				map.put(result.getInt(1), i);
+				map.put(result.getInt("songID"), i);
 				i++;
 			}
 			size = i;
@@ -73,10 +73,10 @@ public class Graph {
 			int source, destination;
 			double support, confidence, weight;
 			while(result.next()){
-				source = result.getInt(1);
-				destination = result.getInt(2);
-				support = result.getDouble(3);
-				confidence = result.getDouble(4);
+				source = result.getInt("sourceSongID");
+				destination = result.getInt("destinationSongID");
+				support = result.getDouble("support");
+				confidence = result.getDouble("confidence");
 				weight = support * confidence;
 				
 				int row = map.get(source);

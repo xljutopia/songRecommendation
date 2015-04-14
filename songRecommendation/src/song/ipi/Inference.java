@@ -46,7 +46,7 @@ public class Inference {
 				System.out.println("Nonexistent UserID!");
 			else{
 				while(result.next()){
-					int songID = result.getInt(1);
+					int songID = result.getInt("songID");
 					int index  =  map.get(songID);
 					bonus.put(index, 1);
 				}
@@ -81,31 +81,31 @@ public class Inference {
 		Graph tool = new Graph();
 		BiMap<Integer, Integer> map = tool.buildSongHashMap();
 		int size = tool.getSize();
-		System.out.println("matrix size is " + size);
+		System.out.println("The number of songs in database is " + size);
 		double [] array = new double[size];
 		double initialV = 1.0/size;
 		//System.out.println(initialV);
 		for(int i = 0; i < size; i++)
 			array[i] = initialV;
-		double error = 1000, threshold = 0.0001, alpha = 0.2;
+		double error = 1000, threshold = 0.0001, alpha = 0.3;
 		DoubleMatrix graph= tool.buildGraph(map, size);
 		DoubleMatrix degree = new DoubleMatrix(array),
 				     bonus  = getBonusVector(map, userID, size).muli(1-alpha),
-				     next ;
+				     next, finalDegree = degree;
 		
 		DoubleMatrix transposedGraph = graph.transpose().muli(alpha);
 		
 		while(error > threshold){
-			next = transposedGraph.mmul(degree);
-			
+			next = transposedGraph.mmul(degree);			
 			next.addiColumnVector(bonus);
 			error = getDifference(next, degree);
+			finalDegree = degree;
 			degree = next;
 		}
 		//filter songs sung before in performance degree
 		for(int i = 0; i < size; i++){
 			if(bonus.get(i) == (1-alpha))
-				degree.put(i, 0.0);
+				finalDegree.put(i, 0.0);
 		}
 		
 		int recommendedSongIDs[] = new int[k];
@@ -114,12 +114,12 @@ public class Inference {
 		double max = 0.0;
 		BiMap<Integer, Integer> reverseMap = map.inverse();
 		while(i < k){
-			max = degree.max();
+			max = finalDegree.max();
 			int j = 0;
 			while(j < size){
-				if(i < k && max == degree.get(j)){
+				if(i < k && max == finalDegree.get(j)){
 					recommendedSongIDs[i++] = reverseMap.get(j);
-					degree.put(j, 0.0);
+					finalDegree.put(j, 0.0);
 				}
 				j++;
 			}
