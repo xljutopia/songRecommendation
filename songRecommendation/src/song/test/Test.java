@@ -41,7 +41,7 @@ public class Test {
 				System.out.print(finalDegree[i]+" ");
 			}
 		}
-		System.out.println();
+		//System.out.println();
 		return count;
 	}
 }

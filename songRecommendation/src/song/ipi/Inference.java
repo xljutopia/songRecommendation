@@ -23,7 +23,6 @@ public class Inference {
 	//private HashMap<Integer, Integer> map;
 	/**
 	 * constructor function
-	 * @param hash
 	 */
 	public Inference(){
 
@@ -81,18 +80,16 @@ public class Inference {
 		Graph tool = new Graph();
 		BiMap<Integer, Integer> map = tool.buildSongHashMap();
 		int size = tool.getSize();
-		System.out.println("The number of songs in database is " + size);
+		//System.out.println("The number of songs in database is " + size);
 		double [] array = new double[size];
 		double initialV = 1.0/size;
-		//System.out.println(initialV);
 		for(int i = 0; i < size; i++)
 			array[i] = initialV;
-		double error = 1000, threshold = 0.0001, alpha = 0.3;
+		double error = 1000, threshold = 0.0001, alpha = 0.3, beta = 1.0 - alpha;
 		DoubleMatrix graph= tool.buildGraph(map, size);
 		DoubleMatrix degree = new DoubleMatrix(array),
 				     bonus  = getBonusVector(map, userID, size).muli(1-alpha),
-				     next, finalDegree = degree;
-		
+				     next, finalDegree = degree;	
 		DoubleMatrix transposedGraph = graph.transpose().muli(alpha);
 		
 		while(error > threshold){
@@ -104,7 +101,7 @@ public class Inference {
 		}
 		//filter songs sung before in performance degree
 		for(int i = 0; i < size; i++){
-			if(bonus.get(i) == (1-alpha))
+			if(0 == Double.compare(bonus.get(i), beta))	
 				finalDegree.put(i, 0.0);
 		}
 		
@@ -117,7 +114,7 @@ public class Inference {
 			max = finalDegree.max();
 			int j = 0;
 			while(j < size){
-				if(i < k && max == finalDegree.get(j)){
+				if(i < k && 0 == Double.compare(finalDegree.get(j), max)){
 					recommendedSongIDs[i++] = reverseMap.get(j);
 					finalDegree.put(j, 0.0);
 				}
@@ -126,5 +123,4 @@ public class Inference {
 		}
 		return recommendedSongIDs;
 	}
-	
 }
