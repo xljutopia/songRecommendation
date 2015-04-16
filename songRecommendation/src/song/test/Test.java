@@ -11,20 +11,37 @@ import song.database.DatabaseQuery;
  * @version 1.0
  */
 public class Test {
+	private static int size;
 	/**
-	 * count number of matched songs in test data
-	 * @param finalDegree
-	 * @param userID
+	 * constructor function
+	 */
+	public Test(){
+		size = 0;
+	}
+	/**
+	 * count the number of songs in test data for specific user
 	 * @return
 	 */
+	public static int getSize(){
+		return size;
+	}
+	/**
+	 * count number of matched songs in test data
+	 * @param finalDegree recommended song IDs
+	 * @param userID input user ID
+	 * @return the number of matched songs in test data
+	 */
 	public static int compareWithTestData(int[] finalDegree, int userID){
-		int count = 0, size = 0;
+		int count = 0 ;
 		String sql = "select * from SongRecommendation_0rz9.UserSongTestData where userID = "+userID;
 		ResultSet result = DatabaseQuery.query(sql);
 		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
 		try {
-			if(!result.next())
+			if(!result.next()){
 				System.out.println("Nonexistent UserID!");
+				size = 0;
+				return 0;
+			}
 			else{
 				while(result.next()){
 					int songID = result.getInt("songID");
@@ -38,7 +55,7 @@ public class Test {
 		for(int i = 0; i < finalDegree.length; i++){
 			if(map.containsKey(finalDegree[i])){
 				count++;
-				System.out.print(finalDegree[i]+" ");
+				//System.out.print(finalDegree[i]+" ");
 			}
 		}
 		//System.out.println();
