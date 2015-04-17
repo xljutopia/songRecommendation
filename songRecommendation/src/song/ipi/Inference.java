@@ -41,9 +41,25 @@ public class Inference {
 		String sql = "select * from SongRecommendation_0rz9.UserSongTrainData where userID = "+inputUserID;
 		ResultSet result = DatabaseQuery.query(sql);
 		try {
-			if(!result.next())
+			if(!result.next()){
 				System.out.println("Nonexistent UserID!");
+			}
 			else{
+				int sum = 0;
+				int [] dis = new int[size];
+				BiMap<Integer, Integer> reverseMap = map.inverse();
+				//calculate distance between user and each song
+				for(int i = 0; i < size; i++){
+					dis[i] = Math.abs(inputUserID - reverseMap.get(i));
+					sum += dis[i];
+				}
+				int averageDis = sum / size;
+				System.out.println("The average distance for "+inputUserID+" is "+averageDis);
+				//close songs have high priority
+				for(int i = 0; i < size; i++){
+					if(dis[i] < (averageDis/2))
+						bonus.put(i, 1);
+				}
 				while(result.next()){
 					int songID = result.getInt("songID");
 					int index  =  map.get(songID);
@@ -80,7 +96,7 @@ public class Inference {
 		Graph tool = new Graph();
 		BiMap<Integer, Integer> map = tool.buildSongHashMap();
 		int size = tool.getSize();
-		//System.out.println("The number of songs in database is " + size);
+		System.out.println("The number of songs in database is " + size);
 		double [] array = new double[size];
 		double initialV = 1.0/size;
 		for(int i = 0; i < size; i++)
@@ -106,7 +122,7 @@ public class Inference {
 		}
 		
 		int recommendedSongIDs[] = new int[k];
-		//select part songs from set and put them into array
+		//filter singing history in recommended song list
 		int i = 0;
 		double max = 0.0;
 		BiMap<Integer, Integer> reverseMap = map.inverse();
