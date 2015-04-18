@@ -62,7 +62,7 @@ public class Graph {
 	 * @param size matrix dimension
 	 * @return
 	 */
-	public DoubleMatrix buildGraph(BiMap<Integer, Integer> map, int size){
+	public DoubleMatrix buildGraph(BiMap<Integer, Integer> map, int size, int type){
 		DoubleMatrix graph = DoubleMatrix.zeros(size, size);
 		if(DatabaseQuery.connection == null)
 			DatabaseQuery.connect();
@@ -77,7 +77,12 @@ public class Graph {
 				destination = result.getInt("destinationSongID");
 				support = result.getDouble("support");
 				confidence = result.getDouble("confidence");
-				weight = support * confidence;
+				if(1 == type)
+					weight = support;
+				else if(2 == type)
+					weight = confidence;
+				else
+					weight = support * confidence;
 				
 				int row = map.get(source);
 				int column = map.get(destination);

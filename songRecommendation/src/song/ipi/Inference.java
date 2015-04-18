@@ -74,7 +74,7 @@ public class Inference {
 	 * @param k the number of songs to be recommended
 	 * @return an array of recommended song IDs
 	 */
-	public int[] IPI(int userID, int k){
+	public int[] IPI(int userID, int k, int type) {
 		if(DatabaseQuery.connection == null)
 			DatabaseQuery.connect();
 		Graph tool = new Graph();
@@ -86,7 +86,7 @@ public class Inference {
 		for(int i = 0; i < size; i++)
 			array[i] = initialV;
 		double error = 1000, threshold = 0.0001, alpha = 0.3, beta = 1.0 - alpha;
-		DoubleMatrix graph= tool.buildGraph(map, size);
+		DoubleMatrix graph= tool.buildGraph(map, size, type);
 		DoubleMatrix degree = new DoubleMatrix(array),
 				     bonus  = getBonusVector(map, userID, size).muli(1-alpha),
 				     next, finalDegree = degree;	
