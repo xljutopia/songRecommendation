@@ -22,8 +22,9 @@ public class Main {
 		//int k = input.nextInt();
 		int userID = Integer.parseInt(args[0]);
 		int k = Integer.parseInt(args[1]);
+		int type = Integer.parseInt(args[2]);
 		Inference ipi = new Inference();
-		int[] vec = ipi.IPI(userID, k);
+		int[] vec = ipi.IPI(userID, k, type);
 
 		//for(int v:vec){
 		//	System.out.println(v);
@@ -32,7 +33,7 @@ public class Main {
 		int matchedSongs = Test.compareWithTestData(vec, userID);
 		int songsInTestData = Test.getSize();
 		if(songsInTestData == 0)
-			System.out.println(0+","+0);
+			System.out.println(0.0+","+0.0);
 		else{
 			double	precision = 100.0 * matchedSongs / k;
 			double	recall = 100.0 * matchedSongs / songsInTestData;
