@@ -38,7 +38,7 @@ public class Main {
 			double	precision = 100.0 * matchedSongs / k;
 			double	recall = 100.0 * matchedSongs / songsInTestData;
 				
-			System.out.println(precision+","+recall);
+			System.out.printf("%.3f,%.3f\n", precision, recall);
 		}
 		//System.out.println("# of matched songs for "+userID+" is "+match);
 		DatabaseQuery.close();

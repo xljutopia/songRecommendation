@@ -49,7 +49,7 @@ public class Inference {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		System.out.println("Songs in history is "+count);
+		//System.out.println("Songs in history is "+count);
 		return bonus;
 	}
 	/**
@@ -62,7 +62,7 @@ public class Inference {
 	private DoubleMatrix getPMEBonusVector(DoubleMatrix bonus, BiMap<Integer, Integer> map, int inputUserID){
 		DoubleMatrix PMEBonus = bonus.mul(1.0);
 		
-		double averageDis = 0.0, threshold = 0.5;
+		double averageDis = 0.0, threshold = 0.75;
 		int size = map.size();
 		int [] dis = new int[size];
 		BiMap<Integer, Integer> reverseMap = map.inverse();
@@ -71,8 +71,8 @@ public class Inference {
 			dis[i] = Math.abs(inputUserID/100 - reverseMap.get(i));
 			averageDis += dis[i]*1.0/size;
 		}
-		System.out.println("The average distance for "+inputUserID+" is "+averageDis);
-		//close songs have high priority
+		//System.out.println("The average distance for "+inputUserID+" is "+averageDis);
+		//choose songs having high priority
 		int count = 0;
 		for(int i = 0; i < size; i++){
 			if(dis[i] < averageDis*threshold){
@@ -80,7 +80,7 @@ public class Inference {
 				count++;
 			}
 		}
-		System.out.println("PME qualified songs are "+count);
+		//System.out.println("PME qualified songs are "+count);
 	
 		return PMEBonus;
 	}
@@ -110,7 +110,7 @@ public class Inference {
 		Graph tool = new Graph();
 		BiMap<Integer, Integer> map = tool.buildSongHashMap();
 		int size = tool.getSize();
-		System.out.println("The number of songs in database is " + size);
+		//System.out.println("The number of songs in database is " + size);
 		double [] array = new double[size];
 		double initialV = 1.0/size;
 		for(int i = 0; i < size; i++)
