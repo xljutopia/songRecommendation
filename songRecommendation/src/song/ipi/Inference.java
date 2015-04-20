@@ -60,7 +60,7 @@ public class Inference {
 	 * @return
 	 */
 	private DoubleMatrix getPMEBonusVector(DoubleMatrix bonus, BiMap<Integer, Integer> map, int inputUserID){
-		DoubleMatrix PMEBonus = bonus.mul(1.0);
+		DoubleMatrix PMEBonus = bonus.mul(1.0); //a copy of bonus vector
 		
 		double averageDis = 0.0, threshold = 0.75;
 		int size = map.size();
