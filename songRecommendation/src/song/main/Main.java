@@ -25,13 +25,16 @@ public class Main {
 		int type = Integer.parseInt(args[2]);
 		Inference ipi = new Inference();
 		int[] vec = ipi.IPI(userID, k, type);
-
-		//for(int v:vec){
-		//	System.out.println(v);
-		//}
-		//System.out.println();
+		System.out.println("For user "+userID+", "+vec.length+" songs are recommended.\nSong IDs are listed below: ");
+		for(int v:vec){
+			System.out.print(v+" ");
+		}
+		System.out.println();
 		int matchedSongs = Test.compareWithTestData(vec, userID);
-		int songsInTestData = Test.getSize();
+		//int songsInTestData = Test.getSize();
+		System.out.println(matchedSongs+" songs are matched in test data.");
+		System.out.println();
+		/*
 		if(songsInTestData == 0)
 			System.out.println(0.0+","+0.0);
 		else{
@@ -39,7 +42,8 @@ public class Main {
 			double	recall = 100.0 * matchedSongs / songsInTestData;
 				
 			System.out.printf("%.3f,%.3f\n", precision, recall);
-		}
+		}*/
+		
 		//System.out.println("# of matched songs for "+userID+" is "+match);
 		DatabaseQuery.close();
 	}

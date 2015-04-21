@@ -37,13 +37,13 @@ public class Inference {
 		if(DatabaseQuery.connection == null)
 			DatabaseQuery.connect();
 		DoubleMatrix bonus = DoubleMatrix.zeros(size);
-		int count = 0;
+		//int count = 0;
 		try {			
 			while(result.next()){
 				int songID = result.getInt("songID");
 				int index  =  map.get(songID);
 				bonus.put(index, 1.0);
-				count++;
+				//count++;
 			}		
 		} catch (SQLException e1) {
 			// TODO Auto-generated catch block
@@ -53,13 +53,16 @@ public class Inference {
 		return bonus;
 	}
 	/**
-	 * 
-	 * @param bonus
-	 * @param map
-	 * @param inputUserID
+	 * based on bonus vector, compute distance between user and songs, 
+	 * use threshold to select a few songs that are close to user, and
+	 * assign 1 for qualified songs in PME bonus vector
+	 * @param bonus the bonus vector
+	 * @param map song-index HashMap
+	 * @param inputUserID user ID
 	 * @return
 	 */
-	private DoubleMatrix getPMEBonusVector(DoubleMatrix bonus, BiMap<Integer, Integer> map, int inputUserID){
+	private DoubleMatrix getPMEBonusVector(DoubleMatrix bonus, BiMap<Integer, Integer> map,
+			int inputUserID){
 		DoubleMatrix PMEBonus = bonus.mul(1.0); //a copy of bonus vector
 		
 		double averageDis = 0.0, threshold = 0.75;
@@ -71,19 +74,15 @@ public class Inference {
 			dis[i] = Math.abs(inputUserID/100 - reverseMap.get(i));
 			averageDis += dis[i]*1.0/size;
 		}
-		//System.out.println("The average distance for "+inputUserID+" is "+averageDis);
-		//choose songs having high priority
-		int count = 0;
+		//choose songs close to user
 		for(int i = 0; i < size; i++){
 			if(dis[i] < averageDis*threshold){
 				PMEBonus.put(i, 1);
-				count++;
 			}
 		}
-		//System.out.println("PME qualified songs are "+count);
-	
 		return PMEBonus;
 	}
+	
 	/**
 	 * compute the squared difference between two vectors
 	 * @param m1 vector1
