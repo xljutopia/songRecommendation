@@ -106,7 +106,7 @@ public class Inference {
 		if(DatabaseQuery.connection == null)
 			DatabaseQuery.connect();
 		
-		Graph tool = new Graph();
+		Graph tool = new Graph(userID);
 		BiMap<Integer, Integer> map = tool.buildSongHashMap();
 		int size = tool.getSize();
 		//System.out.println("The number of songs in database is " + size);

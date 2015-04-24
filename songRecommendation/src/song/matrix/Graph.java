@@ -18,11 +18,17 @@ import song.database.DatabaseQuery;
  */
 public class Graph {
     private int size;
+    private int userID;
     /**
      * constructor function
      */
 	public Graph(){
 		size = 0;
+		userID = 0;
+	}
+	public Graph(int ID){
+		size = 0;
+		userID = ID;
 	}
 	/**
 	 * get the matrix size
@@ -31,6 +37,10 @@ public class Graph {
 	public int getSize(){
 		return size;
 	}
+	public int getUserID(){
+		return userID;
+	}
+	
 	/**
 	 * build a bidirectional HashMap whose key is song ID and value is index in matrix
 	 * for songs in database
@@ -67,8 +77,13 @@ public class Graph {
 		DoubleMatrix graph = DoubleMatrix.zeros(size, size);
 		if(DatabaseQuery.connection == null)
 			DatabaseQuery.connect();
-		
-		String sql = "select * from SongRecommendation_0rz9.DifficultyOrdering";
+		String sql;
+		if(0 != userID)
+			sql = "select * from SongRecommendation_0rz9.DifficultyOrdering where " +
+			"sourceSongID in (select songID from SongRecommendation_0rz9.UserSongTrainData" +
+			" where userID = "+userID+")";
+		else
+			sql = "select * from SongRecommendation_0rz9.DifficultyOrdering";
 		ResultSet result = DatabaseQuery.query(sql);
 		try{
 			int source, destination;
